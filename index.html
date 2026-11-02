@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR 코드 생성기 - URL to QR</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <main class="container">
+    <header class="app-header">
+      <div class="badge">OFFLINE READY · FILE:// SUPPORTED</div>
+      <h1>URL QR 코드 생성기</h1>
+      <p>웹사이트 주소(URL)나 텍스트를 입력하면 즉시 고화질 QR 코드로 변환합니다.</p>
+    </header>
+
+    <div class="app-grid">
+      <!-- 왼쪽: 입력 및 옵션 패널 -->
+      <section class="card controls-card">
+        <div class="form-group">
+          <div class="label-row">
+            <label for="url-input">URL 또는 텍스트 입력</label>
+            <span id="char-count" class="char-count">24 바이트</span>
+          </div>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="url-input"
+              placeholder="https://example.com"
+              value="https://www.google.com"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="button" id="clear-btn" class="icon-btn" title="입력 지우기" aria-label="입력 지우기">
+              ✕
+            </button>
+          </div>
+          <div class="quick-chips">
+            <span class="chip-label">빠른 입력:</span>
+            <button type="button" class="chip" data-prefix="https://">https://</button>
+            <button type="button" class="chip" data-sample="https://www.naver.com">네이버</button>
+            <button type="button" class="chip" data-sample="https://github.com">GitHub</button>
+            <button type="button" class="chip" data-sample="https://www.youtube.com">YouTube</button>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="options-grid">
+          <div class="form-group">
+            <label for="size-select">이미지 크기 (해상도)</label>
+            <select id="size-select">
+              <option value="240">240 × 240 px (소형)</option>
+              <option value="320" selected>320 × 320 px (표준)</option>
+              <option value="512">512 × 512 px (고화질)</option>
+              <option value="1024">1024 × 1024 px (인쇄용)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ec-select">오류 복원 수준</label>
+            <select id="ec-select">
+              <option value="L">낮음 (L - 7% 복원)</option>
+              <option value="M" selected>보통 (M - 15% 복원)</option>
+              <option value="Q">높음 (Q - 25% 복원)</option>
+              <option value="H">최고 (H - 30% 복원)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fg-color">QR 코드 색상</label>
+            <div class="color-picker-wrap">
+              <input type="color" id="fg-color" value="#111827" />
+              <span id="fg-color-hex" class="color-hex">#111827</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="bg-color">배경 색상</label>
+            <div class="color-picker-wrap">
+              <input type="color" id="bg-color" value="#ffffff" />
+              <span id="bg-color-hex" class="color-hex">#FFFFFF</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="margin-select">여백 (Quiet Zone)</label>
+            <select id="margin-select">
+              <option value="1">좁게 (1칸)</option>
+              <option value="2">보통 (2칸)</option>
+              <option value="4" selected>표준 (4칸 권장)</option>
+              <option value="6">넓게 (6칸)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="style-select">모듈 스타일</label>
+            <select id="style-select">
+              <option value="square" selected>클래식 정사각형</option>
+              <option value="rounded">부드러운 라운드</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 최근 생성 기록 -->
+        <div class="history-section">
+          <div class="history-header">
+            <span>최근 저장/생성 URL</span>
+            <button type="button" id="clear-history-btn" class="text-btn">전체 삭제</button>
+          </div>
+          <ul id="history-list" class="history-list"></ul>
+        </div>
+      </section>
+
+      <!-- 오른쪽: QR 미리보기 및 다운로드 패널 -->
+      <section class="card preview-card">
+        <div class="preview-header">
+          <span class="preview-title">실시간 미리보기</span>
+          <span id="qr-meta" class="qr-meta">Version 2 · 25×25</span>
+        </div>
+
+        <div class="canvas-stage" id="canvas-stage">
+          <canvas id="qr-canvas" width="320" height="320"></canvas>
+          <div id="empty-state" class="empty-state" hidden>
+            <p>URL 또는 텍스트를 입력하면<br />이곳에 QR 코드가 표시됩니다.</p>
+          </div>
+        </div>
+
+        <div id="error-banner" class="error-banner" hidden></div>
+
+        <div class="action-buttons">
+          <button type="button" id="download-png-btn" class="btn btn-primary">
+            PNG 다운로드
+          </button>
+          <button type="button" id="download-svg-btn" class="btn btn-secondary">
+            SVG 다운로드
+          </button>
+          <button type="button" id="copy-img-btn" class="btn btn-outline">
+            클립보드 복사
+          </button>
+        </div>
+
+        <p id="toast-msg" class="toast-msg" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="qrcode.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
